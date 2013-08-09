@@ -8,12 +8,12 @@
 using namespace std;
 
 // MAXVALUE is the N value the program will run to.
-const unsigned long MAXVALUE = 10000000;
+const unsigned long MAXVALUE = 10000000; //10 million
 unsigned long N= 2; //size of the dominoes
 
 unsigned long Mex(bool used_values[], unsigned long max);
-void MakeFalse(bool used_values[], unsigned long i);
-void MakeAllFalse(bool used_values[]);
+//void MakeFalse(bool used_values[], unsigned long i);
+//void MakeAllFalse(bool used_values[]);
 int main()
 {
 	char writefilename[64];
@@ -46,7 +46,7 @@ int main()
 	}
 	fclose(writefile);
 
-	// Open the file for writing.
+	// Open the file for appending.
 	writefile = fopen( writefilename, "a" );
 
 	// If the file already existed then we don't need to rewrite the initial values; so check before doing so.
@@ -74,9 +74,6 @@ int main()
 		fprintf( writefile, buffer );
 		fprintf( writefile, "1,%lu,%lu,%lu,%lu\n", sprague_n[1], sprague_s[1], sprague_l[1], sprague_u[1] );
 		fprintf( writefile, "2,%lu,%lu,%lu,%lu\n", sprague_n[2], sprague_s[2], sprague_l[2], sprague_u[2] );
-        //writefile << 0 << "," << sprague_n[0] << sprague_s[0] << sprague_l[0] << sprague_u[0] << endl;
-        //writefile << 1 << "," << sprague_n[1] << sprague_s[1] << sprague_l[1] << sprague_u[1] << endl;
-        //writefile << 2 << "," << sprague_n[2] << sprague_s[2] << sprague_l[2] << sprague_u[2] << endl;
 		//writefile << 0 << "," << sprague_n[0] << "," << sprague_s[0] << "," << sprague_l[0] << "," << sprague_u[0] << endl;
 		//writefile << 1 << "," << sprague_n[1] << "," << sprague_s[1] << "," << sprague_l[1] << "," << sprague_u[1] << endl;
 		//writefile << 2 << "," << sprague_n[2] << "," << sprague_s[2] << "," << sprague_l[2] << "," << sprague_u[2] << endl;
@@ -88,28 +85,34 @@ int main()
 	for(unsigned long i = N+1; i <= MAXVALUE; i++)
 	{
 		//sprague_n
+        #pragma omp for
 		for(unsigned long j = 0; j <= i-N; j++)
 			used_values[(sprague_s[j] ^ sprague_s[i-j-N])] = true;
 		sprague_n[i] = Mex(used_values, i);
 		memset(used_values, 0, i);  //reset used_values array to empty
 
 		//sprague_s
+        #pragma omp for
 		for(unsigned long j = 0; j <= i - N; j++)
 			used_values[(sprague_l[j] ^ sprague_s[i-j-N])] = true;
+        #pragma omp for
 		for(unsigned long j = 1; j <= i - N; j++)
 			used_values[(sprague_u[j] ^ sprague_s[i-j-N])] = true;
 		sprague_s[i] = Mex(used_values, i);
 		memset(used_values, 0, i);  //reset used_values array to empty
 
 		//sprague_l
+        #pragma omp for
 		for(unsigned long j = 0; j <= i-N; j++)
 			used_values[(sprague_l[j] ^ sprague_l[i-j-N])] = true;
+        #pragma omp for
 		for(unsigned long j = 1; j <= i-N-1; j++)
 			used_values[(sprague_u[j] ^ sprague_u[i-j-N])] = true;
 		sprague_l[i] = Mex(used_values, i);
 		memset(used_values, 0, i);  //reset used_values array to empty
 
 		//sprague_u
+        #pragma omp for
 		for(unsigned long j = 0; j <= i-N-1; j++)
 			used_values[(sprague_l[j] ^ sprague_u[i-j-N])] = true;
 		sprague_u[i] = Mex(used_values, i);
@@ -127,7 +130,7 @@ int main()
 }
 
 unsigned long Mex(bool used_values[], unsigned long max)
-//Minimum excluded value (i.e. Mex([0,1,2,4,7])=3 OR Mex([1,4])=0 )
+//Minimum excluded value (i.e. Mex([0,1,2,4,7])=3 or Mex([1,4])=0 )
 {
 	for(unsigned long i = 0; i < max; i++)
 	{
