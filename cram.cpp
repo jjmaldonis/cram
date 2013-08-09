@@ -17,7 +17,7 @@ unsigned long Mex(bool used_values[], unsigned long max);
 int main()
 {
 	char writefilename[64];
-	snprintf(writefilename, 64, "qsubGVs_%d", MAXVALUE);
+	snprintf(writefilename, 64, "gv_%d", MAXVALUE);
 	FILE* writefile;
     //ofstream writefile(writefilename);
 	// Create the 4 arrays of size MAXVALUE and a boolean "used" array for mexing
